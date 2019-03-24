@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>校园促进会</title>
+</head>
+<body>
+<link rel="stylesheet" href="//unpkg.com/vue-ydui/dist/ydui.rem.css">
+<script type="text/javascript" src="//unpkg.com/vue-ydui/dist/ydui.flexible.js"></script>
+<script type="text/javascript" src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+<script type="text/javascript" src="//unpkg.com/vue-ydui/dist/ydui.rem.js"></script>
+<script type="text/javascript" src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
+
+<style type="text/css">
+  [v-cloak] { display: none }
+  .label { width: 1.6rem; display: inline-block; }
+  .btns { margin:.3rem .3rem; }
+  .btns button { margin: 0; }
+</style>
+
+<!-- Vue模板 -->
+<div id="app" v-cloak>
+  <yd-layout class="app">
+    <yd-navbar slot="navbar" title="校园促进会" bgcolor="#4ba6dd" color="#fff" :height="0.8"></yd-navbar>
+    <yd-cell-group>
+      <yd-cell-item>
+        <span class="label" slot="left">姓名</span>
+        <yd-input ref="fullname" slot="right" required v-model="form.fullname" regex="[\u4e00-\u9fa5]" max="20" placeholder="请输入姓名"></yd-input>
+      </yd-cell-item>
+      <yd-cell-item>
+        <span class="label" slot="left">手机号</span>
+        <yd-input ref="phone" slot="right" required type="tel" regex="mobile" v-model="form.phone" min="11" max="11" placeholder="请输入手机号"></yd-input>
+      </yd-cell-item>
+      <yd-cell-item>
+        <span class="label" slot="left">确认手机号</span>
+        <yd-input ref="rephoen" slot="right" required type="tel" regex="mobile" v-model="form.rephone" min="11" max="11" placeholder="请再次输入手机号"></yd-input>
+      </yd-cell-item>
+      <yd-cell-item>
+        <span class="label" slot="left">所属学校</span>
+        <yd-input ref="school" slot="right" required v-model="form.school" max="100" placeholder="请输入所属学校"></yd-input>
+      </yd-cell-item>
+    </yd-cell-group>
+    <yd-cell-group title="您希望在促进会得到什么样的信息（可多选）">
+      <yd-cell-item type="checkbox" v-for="(d, i) in gainsarray" :key="i">
+        <span slot="left">{{d}}</span>
+        <input slot="right" type="checkbox" :value="d" v-model="form.gains"/>
+      </yd-cell-item>
+    </yd-cell-group>
+    <div class="btns">
+      <yd-button size="large" type="primary" bgcolor="#4ba6dd" color="#fff" @click.native="submit()">提交</yd-button>
+    </div>
+  </yd-layout>
+</div>
+
+<script type="text/javascript">
+var gainsarray = [
+  "1.校友专属福利",
+  "2.户外、酒会、单身派对等兴趣类活动",
+  "3.正式的商业类学术类活动&讲座"
+];
+var form = { fullname: '', phone: '', rephone: '', school: '', gains: [] }; 
+new Vue({
+  data() {
+    return { gainsarray: gainsarray, form: form };
+  },
+  methods: {
+    submit() {
+      if (!this.$refs.fullname.valid) {
+        this.$dialog.toast({mes: '请输入用户名（只能是中文）'});
+        return this.$refs.fullname.setFocus();
+      }
+      if (!this.$refs.phone.valid) {
+        this.$dialog.toast({mes: '请输入11位有效的手机号码'});
+        return this.$refs.phone.setFocus();
+      }
+      if (this.form.phone != this.form.rephone) {
+        this.$dialog.toast({mes: '两次手机号码不一致'});
+        return this.$refs.rephone.setFocus();
+      }
+      if (!this.$refs.school.valid) {
+        this.$dialog.toast({mes: '请输入所属学校（100位字符以内）'});
+        return this.$refs.school.setFocus();
+      }
+      if (!this.form.gains.length) {
+        this.$dialog.toast({mes: '请至少选择一条您希望在促进会得到信息'});
+        return;
+      }
+
+      this.$dialog.loading.open('提交中...');
+
+      // form 表单提交
+      const url = '/register';
+      axios({ method: 'get', url: url, params: this.form, responseType: 'json', }).then((function(res) {
+        this.$dialog.loading.close();
+        // 成功的消息
+        this.$dialog.toast({mes: '操作成功', icon: 'success'});
+      }).bind(this), (function(error) {
+        this.$dialog.loading.close();
+        // 失败的消息
+        this.$dialog.toast({mes: '网络超时，请稍后再试'});
+      }).bind(this));
+    }
+  },
+  created() {},
+  mounted() {}
+}).$mount("#app");
+</script>
+</body>
+</html>
